@@ -10,7 +10,7 @@ import Counter from '../components/Counter'
 import MainButton from '../components/MainButton'
 import MainNavbar from '../components/MainNavbar'
 import useEvents from '../cutoomHooks/useEvents'
-import authSlice, { fetchCurrentUser } from '../store/authSlice'
+import authSlice from '../store/authSlice'
 // import styles from '../styles/Home.module.css'
 // import '../styles/landingPage.module.css'
 import Browse from '../sections/Browse'
@@ -19,10 +19,10 @@ import { RootState } from '../store/Store'
 const Home: NextPage = () => {
   const dispatch = useDispatch<ThunkDispatch<RootState, any, AnyAction>>();
 
-  useEffect(() => {
-    console.log("index.ts");
-    dispatch(fetchCurrentUser());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   console.log("index.ts");
+  //   dispatch(fetchCurrentUser());
+  // }, [dispatch]);
 
   const { goToEventsPage } = useEvents()
 

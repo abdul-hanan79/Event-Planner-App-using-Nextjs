@@ -8,7 +8,7 @@ import useSignup from '../cutoomHooks/useSignup'
 const MainButton = (props: any) => {
     return (
         <div>
-            <Button className={`main-btn rounded-pill ${props.className}`} size="lg" onClick={props.onClick}>
+            <Button className={`main-btn rounded-pill ${props.className}`} size="lg" onClick={props?.onClick} >
                 {props.title}
             </Button>
         </div>

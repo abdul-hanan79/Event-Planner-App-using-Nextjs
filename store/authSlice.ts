@@ -6,40 +6,16 @@ import {
     signInWithEmailAndPassword,
     onAuthStateChanged,
 } from "../config/Firebase";
+import axios from "axios";
 
 
-export const fetchCurrentUser = createAsyncThunk(
-    "auth/checkUserSignIn",
-    async () => {
-        try {
-            const user = await new Promise((resolve, reject) => {
-                const unsubscribe = onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        console.log("onAuthStateChanged", user);
-                        let loggedInuser = {
-                            email: user?.email,
-                            id: user?.uid
-                        }
-                        resolve(user);
-                    } else {
-                        resolve(false);
-                    }
-                });
-                unsubscribe();
-            });
-            console.log("user is", user);
 
-            return { user }; // return a fulfilled action with the user object
-        } catch (error) {
-            return { error }; // return a rejected action with the error object
-        }
-    }
-);
 
-export const signupUser = createAsyncThunk('authUser/signupUser', async (item: any) => {
+export const signupUser = createAsyncThunk('authUser/signupUser', async (user: any) => {
     try {
-        const user = await createUserWithEmailAndPassword(auth, item.email, item.password)
-        console.log("the user i singup", user);
+        // const user = await createUserWithEmailAndPassword(auth, item.email, item.password)
+        const signupUser = await axios.post("http://localhost:8000/signupUser", { user })
+        console.log("the user i singup", signupUser);
         return user
     }
     catch (e) {
@@ -50,14 +26,20 @@ export const signupUser = createAsyncThunk('authUser/signupUser', async (item: a
 
 
 })
-export const loginUser = createAsyncThunk('auth/loginUser', async ({ email, password }: any) => {
-    console.log("login", email, password);
+export const loginUser = createAsyncThunk('auth/loginUser', async (loginedUser: any) => {
+    // console.log("login", email, password);
+    console.log("the logined user", loginedUser);
+
     try {
-        const user = await signInWithEmailAndPassword(auth, email, password)
-        return user
+        // const user = await signInWithEmailAndPassword(auth, email, password)
+        const user = await axios.post("http://localhost:8000/loginUser", { loginedUser })
+        console.log("user dasta is", user.data[0]);
+        const userData = user.data[0]
+        console.log("UserData", userData);
+        return userData
     }
     catch (e) {
-        alert("login error")
+        console.log("login error", e);
 
     }
 
@@ -98,11 +80,11 @@ const authSlice = createSlice({
             return newState;
         });
         builder.addCase(loginUser.fulfilled, (state, action) => {
-            console.log("the user at login is", action.payload?.user);
-            if (action.payload?.user) {
+            console.log("the user at login is", action.payload);
+            if (action.payload) {
                 let newState: any = {
                     ...state,
-                    user: action.payload?.user,
+                    user: action.payload,
                     isLoggedIn: true,
                     currentUserRequestLoader: false /*this is extra*/
                 };
@@ -115,35 +97,7 @@ const authSlice = createSlice({
                 ...state
             };
         });
-        builder.addCase(fetchCurrentUser.fulfilled, (state, action) => {
-            console.log("newState after current user start", action.payload.user);
 
-            if (action.payload) {
-                if (action.payload?.user) {
-                    let newState: any = {
-                        ...state,
-                        user: action.payload?.user,
-                        isLoggedIn: true,
-                        currentUserRequestLoader: false
-                    };
-                    console.log("newState after current user", newState);
-
-                    return newState;
-                }
-                else {
-                    console.log("false");
-                    let newState: any = {
-                        ...state,
-                    }
-                    console.log("false state", newState);
-                    return newState
-                }
-            }
-            return {
-                ...state,
-                currentUserRequestLoader: false
-            };
-        });
         builder.addCase(signOutUser.fulfilled, (state, action) => {
             console.log("signoutuser in extra reducer");
             let newState = {

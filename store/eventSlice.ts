@@ -14,6 +14,7 @@ import { EditEventFormData } from "../types/EditEventFormDataType";
 
 import { EventFormData } from "../types/EventFormDataType";
 import { AttendeesDetail } from "../types/AttendeesDetailDataType";
+import axios from "axios";
 
 
 
@@ -33,14 +34,16 @@ export const submitEvents = createAsyncThunk("eventSlice/submitEvents", async (e
             location: location,
             description: description,
             attendees: attendees,
-            creator: userId
+            creator: userId,
         }
         console.log("the new docs are ", newDoc);
-        const docRef = await addDoc(collection(db, 'events'), newDoc)
-        console.log("docRef id ", docRef.id)
+        const request = await axios.post("http://localhost:8000/submitEvent", newDoc)
+        console.log("request", request);
+        // const docRef = await addDoc(collection(db, 'events'), newDoc)
+        // console.log("docRef id ", docRef.id)
         const submitedDoc = {
             ...newDoc,
-            id: docRef.id
+            // id: docRef.id
         }
 
         console.log("submited doc", submitedDoc);
@@ -55,18 +58,21 @@ export const fetchEvents = createAsyncThunk("eventSlice/fetchEvents", async () =
     console.log("get events method");
 
     try {
-        const querySnapshot = await getDocs(collection(db, "events"));
+        // const querySnapshot = await getDocs(collection(db, "events"));
+        const querySnapshot = await axios.get("http://localhost:8000/getData")
+        console.log("querySnapc", querySnapshot.data);
+        const querySnapshotData = querySnapshot.data
         let eventsList: EventFormData[] = [];
-        querySnapshot.forEach((doc) => {
+        querySnapshotData.forEach((doc: any) => {
             eventsList.push({
-                creator: doc.data()?.creator,
-                date: doc.data()?.date,
-                description: doc.data()?.description,
-                location: doc.data()?.location,
-                time: doc.data()?.time,
-                title: doc.data()?.title,
-                attendees: doc.data()?.attendees,
-                id: doc.id,
+                creator: doc?.creator,
+                date: doc?.date,
+                description: doc?.description,
+                location: doc?.location,
+                time: doc?.time,
+                title: doc?.title,
+                attendees: doc?.attendees,
+                id: doc?.id,
             });
         });
 
@@ -81,9 +87,10 @@ export const fetchEvents = createAsyncThunk("eventSlice/fetchEvents", async () =
 
 export const deleteEvent = createAsyncThunk('eventSlice/deleteEvent', async (event: EventFormData) => {
     try {
-        console.log("item found in thunk action", event);
+        console.log("item to be deleted found in thunk action", event);
 
-        await deleteDoc(doc(db, "events", event!.id!));
+        // await deleteDoc(doc(db, "events", event!.id!));
+        await axios.delete(`http://localhost:8000/deleteEvent?id=${event.id}`)
         console.log("deleteing");
         return event
     } catch (error) {
@@ -130,28 +137,31 @@ type updateEventType = {
 }
 export const updateEvent = createAsyncThunk("eventSlice/updateEvent", async (updateEventData: updateEventType) => {
     console.log("eventFromDate in updateEvent", updateEventData);
-    const { editTitle, editDate, editTime, editLocation, editDescription } = updateEventData.eventFormData
+    // const { editTitle, editDate, editTime, editLocation, editDescription } = updateEventData.eventFormData
+    const updateEventForm = updateEventData.eventFormData
+    console.log("updateEventForm ", updateEventForm);
     const updateEventId = updateEventData.event!.id!
     console.log("updateEventId", updateEventId);
     try {
-        await updateDoc(doc(db, "events", updateEventId), {
-            title: editTitle,
-            date: editDate,
-            time: editTime,
-            location: editLocation,
-            description: editDescription,
-        });
+        // await updateDoc(doc(db, "events", updateEventId), {
+        //     title: editTitle,
+        //     date: editDate,
+        //     time: editTime,
+        //     location: editLocation,
+        //     description: editDescription,
+        // });
+        await axios.patch("http://localhost:8000/updateEvent", { updateEventId, updateEventForm })
         return updateEventData
-
-
     } catch (error) {
         alert(`error in update todo  ${error}`)
     }
 })
-export const updateAttendees = createAsyncThunk("eventSlice/updateAttendees", async (attendeesDetail:AttendeesDetail) => {
+export const updateAttendees = createAsyncThunk("eventSlice/updateAttendees", async (attendeesDetail: AttendeesDetail) => {
     console.log("the attendees", attendeesDetail);
     const { attendees, event } = attendeesDetail
-    let eventId:string =event!.id!;
+    // const updateEventId=attendeesDetail.event.id
+    let updateEventId: string = event!.id!;
+    const updateEventForm = {attendees:attendeesDetail.attendees}
     // try {
     //     await updateDoc(doc(db, "events", updateEventId), {
     //         title: editTitle,
@@ -162,9 +172,10 @@ export const updateAttendees = createAsyncThunk("eventSlice/updateAttendees", as
     //     });
     //     return updateEventData
     try {
-        await updateDoc(doc(db, "events", eventId), {
-            attendees: attendees
-        });
+        // await updateDoc(doc(db, "events", eventId), {
+        //     attendees: attendees
+        // });
+        await axios.patch("http://localhost:8000/updateEvent", {updateEventForm,updateEventId})
         return attendeesDetail
     }
     catch (e) {

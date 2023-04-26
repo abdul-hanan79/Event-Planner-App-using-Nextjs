@@ -27,8 +27,10 @@ const useLogin = () => {
     const onSubmitHandler = async () => {
         try {
             setLoader(true)
+            const loginedUser={email,password}
+            console.log("login user is",loginedUser);
             // const response = await signInWithEmailAndPassword(auth, email, password)
-            await dispatch(loginUser({ email, password }))
+            await dispatch(loginUser(loginedUser))
             // console.log("response user+++++>", response.UserImpl.accessToken);
             router.push('/')
         }

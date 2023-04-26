@@ -36,11 +36,11 @@ const Events = () => {
   const [filteredEvents, setFilteredEvents] = useState(eventList);
   useEffect(() => {
 
-    const filtered = eventList.filter((event: EventFormData) => {
+    const filtered = eventList?.filter((event: EventFormData) => {
       console.log("serach query", searchQuery);
-      const dateMatch = event?.date.includes(searchQuery.date);
-      const timeMatch = event?.time.includes(searchQuery.time);
-      const locationMatch = event?.location.includes(searchQuery.location);
+      const dateMatch = event?.date?.includes(searchQuery.date);
+      const timeMatch = event?.time?.includes(searchQuery.time);
+      const locationMatch = event?.location?.includes(searchQuery.location);
       return dateMatch && timeMatch && locationMatch;
     });
     setFilteredEvents(filtered);
@@ -90,7 +90,9 @@ const Events = () => {
       <Container>
         <Row className=''>
           {filteredEvents && filteredEvents.map((event: any, index: number) => {
-
+            // const a=event.attendess.filter((attendee)=>attend)
+            const eventJoined = event?.attendees?.includes(userId)
+            console.log("eventJoined=>", eventJoined);
             return (
               <Col key={index} lg={4}>
 
@@ -159,12 +161,14 @@ const Events = () => {
                                 <p key={index} className="attendees-list"><FontAwesomeIcon icon={faCircleDot} /> {attendee}</p>
                               )
                             })}
+
                           </p>
                           <p className='event-creator-div'>{<FontAwesomeIcon icon={faUser} />}<span>{event.creator}</span></p>
 
                         </Card.Text>
                         <div className='d-flex justify-content-center gap-2'>  {event?.creator == userId && <MainButton title={<FontAwesomeIcon icon={faEdit} />} onClick={() => eventEditHandler(event)} />}
-                          {event?.creator != userId && <MainButton title="Join" onClick={() => eventJoinHandler(event)} />}
+                          {event?.creator != userId && !eventJoined && <MainButton title="Join" onClick={() => eventJoinHandler(event)} />}
+                          {event?.creator != userId && eventJoined && <MainButton title="Joined"  className='disabled' />}
                           {event?.creator == userId && <MainButton title={<FontAwesomeIcon icon={faTrash} />} onClick={() => eventDeleteHandler(event)} />}</div>
 
                       </Card.Body>
